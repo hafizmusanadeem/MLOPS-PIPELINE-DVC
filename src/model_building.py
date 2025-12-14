@@ -1,4 +1,5 @@
 import os
+import yaml
 import pickle
 import logging
 import numpy as np
@@ -32,6 +33,27 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 # Logging Completed
+
+
+# Yaml Parameters Setup
+
+def load_params(params_path: str) -> dict:
+    """This function loads parameters from a params.yaml file"""
+    try:
+        with open(params_path, 'r') as file:
+            params = yaml.safe_load(file)
+        logger.debug('Parameters retieved from: %s', file)
+        return params
+    except FileNotFoundError:
+        logger.error('File not Found: %s', params_path)
+        raise
+    except yaml.YAMLError as e:
+        logger.error('YAML Error: %s', e)
+        raise
+    except Exception as e:
+        logger.error('Unexpected error while retrieving parameters: %s', e)
+        raise
+
 
 # Model Training
 
@@ -111,8 +133,7 @@ def save_model(model, file_path: str) -> None:
 
 def main():
     try:
-        params = {'n_estimators':20, 'random_state':2}
-
+        params = load_params(params_path='params.yaml')['model_building']
         train_data= load_data('./data/processed/train_tfidf.csv')
         X_train= train_data.iloc[:, :-1].values
         y_train= train_data.iloc[:, -1].values
